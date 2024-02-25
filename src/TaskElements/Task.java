@@ -12,7 +12,6 @@ public class Task {
     private Status status;
 
     public Task(String name, String description, Status status) {
-        this.id = Manager.generateID();
         this.name = name;
         this.description = description;
         this.status = status;
