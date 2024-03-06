@@ -1,6 +1,5 @@
 package TaskElements;
 
-import TaskManager.Manager;
 import TaskManager.Status;
 
 import java.util.Objects;
