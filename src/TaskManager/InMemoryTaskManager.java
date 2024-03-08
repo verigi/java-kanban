@@ -4,16 +4,13 @@ import TaskElements.Epic;
 import TaskElements.Subtask;
 import TaskElements.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
     private int id = 0;
-    private HashMap<Integer, Task> taskStorage = new HashMap<>();
-    private HashMap<Integer, Subtask> subtaskStorage = new HashMap<>();
-    private HashMap<Integer, Epic> epicStorage = new HashMap<>();
+    private Map<Integer, Task> taskStorage = new HashMap<>();
+    private Map<Integer, Subtask> subtaskStorage = new HashMap<>();
+    private Map<Integer, Epic> epicStorage = new HashMap<>();
     private HistoryManager inMemoryHistoryManager = Managers.getDefaultHistory();
 
     @Override
