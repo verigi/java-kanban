@@ -1,6 +1,6 @@
-package TaskElements;
+package task.elements;
 
-import TaskManager.Status;
+import task.manager.Status;
 
 import java.util.ArrayList;
 

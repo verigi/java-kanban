@@ -1,6 +1,7 @@
-package TaskManager;
+package task.manager;
 
-import TaskElements.Task;
+import task.manager.history.HistoryManager;
+import task.manager.history.InMemoryHistoryManager;
 
 public class Managers {
     public Managers() {

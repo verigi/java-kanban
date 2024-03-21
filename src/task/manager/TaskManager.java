@@ -1,8 +1,8 @@
-package TaskManager;
+package task.manager;
 
-import TaskElements.Epic;
-import TaskElements.Subtask;
-import TaskElements.Task;
+import task.elements.Epic;
+import task.elements.Subtask;
+import task.elements.Task;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public interface TaskManager {
 
     List<Epic> getAllEpicTasks();
 
-    List<Subtask> getCertainEpicSubtasks(Integer epic_ID);
+    List<Subtask> getCertainEpicSubtasks(Integer epicID);
 
     void clearAllTasks();
 
@@ -33,17 +33,17 @@ public interface TaskManager {
 
     void clearAllEpics();
 
-    Task getTask(Integer ID);
+    Task getTask(Integer id);
 
-    Subtask getSubtask(Integer ID);
+    Subtask getSubtask(Integer id);
 
-    Epic getEpic(Integer ID);
+    Epic getEpic(Integer id);
 
     List<Task> getHistory();
 
-    void deleteTaskByID(Integer ID);
+    void deleteTaskByID(Integer id);
 
-    void deleteSubtaskByID(Integer ID);
+    void deleteSubtaskByID(Integer id);
 
-    void deleteEpicByID(Integer ID);
+    void deleteEpicByID(Integer id);
 }

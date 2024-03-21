@@ -1,9 +1,9 @@
-package test;
-
-import TaskElements.Epic;
-import TaskElements.Subtask;
-import TaskElements.Task;
-import TaskManager.*;
+import task.elements.Epic;
+import task.elements.Subtask;
+import task.elements.Task;
+import task.manager.InMemoryTaskManager;
+import task.manager.Status;
+import task.manager.TaskManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -19,7 +19,6 @@ class TaskManagerTest {
     Epic epic1;
     Subtask subtask1;
     Subtask subtask2;
-
 
     @BeforeEach
     @Test
@@ -92,8 +91,8 @@ class TaskManagerTest {
 
     @Test
     @DisplayName("Поиск задания по несуществующему ID")
-    public void shouldBeNullForNoSuchTaskID(){
-        Assertions.assertNull(taskManager.getTask(Integer.MAX_VALUE-1), "Существующее задание");
+    public void shouldBeNullForNoSuchTaskID() {
+        Assertions.assertNull(taskManager.getTask(Integer.MAX_VALUE - 1), "Существующее задание");
     }
 
     @Test
@@ -107,8 +106,8 @@ class TaskManagerTest {
 
     @Test
     @DisplayName("Поиск подзадания по несуществующему ID")
-    public void shouldBeNullForNoSuchSubtaskID(){
-        Assertions.assertNull(taskManager.getSubtask(Integer.MAX_VALUE-1), "Существующее подзадание");
+    public void shouldBeNullForNoSuchSubtaskID() {
+        Assertions.assertNull(taskManager.getSubtask(Integer.MAX_VALUE - 1), "Существующее подзадание");
     }
 
     @Test
@@ -122,8 +121,8 @@ class TaskManagerTest {
 
     @Test
     @DisplayName("Получение эпика по несуществующему ID")
-    public void shouldBeNullForNoSuchEpicID(){
-        Assertions.assertNull(taskManager.getEpic(Integer.MAX_VALUE-1), "Существующее подзадание");
+    public void shouldBeNullForNoSuchEpicID() {
+        Assertions.assertNull(taskManager.getEpic(Integer.MAX_VALUE - 1), "Существующее подзадание");
     }
 
     @Test
@@ -159,7 +158,7 @@ class TaskManagerTest {
         // удаление нескольких подзаданий
         taskManager.deleteSubtaskByID(subtask2.getId());
         taskManager.deleteSubtaskByID(subtask3.getId());
-        Assertions.assertEquals(List.of(subtask4,subtask5), taskManager.getAllSubtasks());
+        Assertions.assertEquals(List.of(subtask4, subtask5), taskManager.getAllSubtasks());
     }
 
     @Test
@@ -179,21 +178,21 @@ class TaskManagerTest {
 
     @Test
     @DisplayName("Удаление эпика - удаление подзаданий")
-    public void shouldReturnEmptyListOfSubtasks(){
+    public void shouldReturnEmptyListOfSubtasks() {
         taskManager.deleteEpicByID(epic1.getId());
         Assertions.assertEquals(Collections.emptyList(), taskManager.getAllSubtasks());
     }
 
     @Test
     @DisplayName("Поиск эпика по подзадаче")
-    public void shouldCheckIfSubtaskHasEpicID(){
+    public void shouldCheckIfSubtaskHasEpicID() {
         Assertions.assertEquals(epic1.getId(), subtask1.getEpicID());
         Assertions.assertEquals(epic1.getId(), subtask2.getEpicID());
     }
 
     @Test
     @DisplayName("Обновление статуса задачи")
-    public void shouldUpdateTaskStatus(){
+    public void shouldUpdateTaskStatus() {
         task1.setStatus(Status.IN_PROGRESS);
         task2.setStatus(Status.DONE);
         Assertions.assertEquals(Status.IN_PROGRESS, task1.getStatus());
@@ -202,7 +201,7 @@ class TaskManagerTest {
 
     @Test
     @DisplayName("Обновление статуса подзадачи")
-    public void shouldUpdateSubtaskStatus(){
+    public void shouldUpdateSubtaskStatus() {
         subtask1.setStatus(Status.IN_PROGRESS);
         subtask2.setStatus(Status.DONE);
         Assertions.assertEquals(Status.IN_PROGRESS, subtask1.getStatus());
@@ -211,30 +210,40 @@ class TaskManagerTest {
 
     @Test
     @DisplayName("Получение списка задач")
-    public void shouldReturnTaskList(){
-        Assertions.assertEquals(List.of(task1,task2), taskManager.getAllTasks());
+    public void shouldReturnTaskList() {
+        Assertions.assertEquals(List.of(task1, task2), taskManager.getAllTasks());
     }
 
     @Test
     @DisplayName("Получение списка подзадач")
-    public void shouldReturnSubtaskList(){
-        Assertions.assertEquals(List.of(subtask1,subtask2), taskManager.getAllSubtasks());
+    public void shouldReturnSubtaskList() {
+        Assertions.assertEquals(List.of(subtask1, subtask2), taskManager.getAllSubtasks());
     }
 
     @Test
     @DisplayName("Получение списка эпиков")
-    public void shouldReturnEpicList(){
+    public void shouldReturnEpicList() {
         Assertions.assertEquals(List.of(epic1), taskManager.getAllEpicTasks());
     }
 
     @Test
     @DisplayName("Проверка истории вызовов")
-    public void shouldReturnListOfRequests(){
+    public void shouldReturnListOfRequests() {
         taskManager.getTask(1);
         taskManager.getTask(2);
         taskManager.getEpic(3);
         taskManager.getSubtask(4);
         taskManager.getSubtask(5);
         Assertions.assertEquals(List.of(task1, task2, epic1, subtask1, subtask2), taskManager.getHistory());
+    }
+
+    @Test
+    @DisplayName("Проверка на дубли")
+    public void shouldReturnListWithoutDuplicates() {
+        taskManager.getTask(1);
+        taskManager.getTask(2);
+        taskManager.getTask(1);
+        taskManager.getTask(1);
+        Assertions.assertEquals(List.of(task2, task1), taskManager.getHistory());
     }
 }

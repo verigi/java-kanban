@@ -1,9 +1,8 @@
-package test;
-
-import TaskManager.*;
-import TaskElements.Epic;
-import TaskElements.Subtask;
-import TaskManager.InMemoryTaskManager;
+import task.manager.Status;
+import task.manager.TaskManager;
+import task.elements.Epic;
+import task.elements.Subtask;
+import task.manager.InMemoryTaskManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
