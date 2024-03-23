@@ -246,4 +246,30 @@ class TaskManagerTest {
         taskManager.getTask(1);
         Assertions.assertEquals(List.of(task2, task1), taskManager.getHistory());
     }
+
+    @Test
+    @DisplayName("Проверка удаления списка всех задач, проверка удаления из истории")
+    public void shouldReturnEmptyListOfTasks() {
+        taskManager.getTask(1);
+        taskManager.getTask(2);
+        taskManager.clearAllTasks();
+        Assertions.assertEquals(0, taskManager.getHistory().size());
+    }
+
+    @Test
+    @DisplayName("Проверка удаления списка всех эпиков, проверка удаления из истории")
+    public void shouldReturnEmptyListOfEpics() {
+        taskManager.getEpic(3);
+        taskManager.clearAllEpics();
+        Assertions.assertEquals(0, taskManager.getHistory().size());
+    }
+
+    @Test
+    @DisplayName("Проверка удаления списка всех подзадач, проверка удаления из истории")
+    public void shouldReturnEmptyListOfSubs() {
+        taskManager.getSubtask(4);
+        taskManager.getSubtask(5);
+        taskManager.clearAllSubtasks();
+        Assertions.assertEquals(0, taskManager.getHistory().size());
+    }
 }
