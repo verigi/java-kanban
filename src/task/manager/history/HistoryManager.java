@@ -12,4 +12,5 @@ public interface HistoryManager {
     void remove(int id);
 
     void removeTaskType(List<Task> taskTypeList);
+
 }

@@ -172,8 +172,8 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteTaskByID(Integer id) {
         if (taskStorage.containsKey(id)) {
-            taskStorage.remove(id);
             inMemoryHistoryManager.remove(id);
+            taskStorage.remove(id);
         } else {
             System.out.println("Задания с таким id не существует.");
         }
@@ -186,8 +186,8 @@ public class InMemoryTaskManager implements TaskManager {
                             .getEpicID())
                     .removeSubtask(id);
             updateEpicStatus(epicStorage.get(subtaskStorage.get(id).getEpicID()));
-            subtaskStorage.remove(id);
             inMemoryHistoryManager.remove(id);
+            subtaskStorage.remove(id);
         } else {
             System.out.println("Подзадания с таким ID не существует.");
         }
@@ -197,11 +197,11 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteEpicByID(Integer id) {
         if (epicStorage.containsKey(id)) {
             for (Integer subtaskID : epicStorage.get(id).getSubtasks()) {
-                subtaskStorage.remove(subtaskID);
                 inMemoryHistoryManager.remove(subtaskID);
+                subtaskStorage.remove(subtaskID);
             }
-            epicStorage.remove(id);
             inMemoryHistoryManager.remove(id);
+            epicStorage.remove(id);
         } else {
             System.out.println("Эпика с таким id не существует.");
         }
