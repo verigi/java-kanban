@@ -19,7 +19,16 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void remove(int id) {
-        handmadeLinkedList.removeNode(handmadeLinkedList.nodeMap.get(id));
+        handmadeLinkedList.removeNode(id);
+    }
+
+    @Override
+    public void removeTaskType(List<Task> taskTypeList) {
+        if (taskTypeList != null) {
+            for (Task task : taskTypeList) {
+                handmadeLinkedList.removeNode(task.getId());
+            }
+        }
     }
 
     private class HandmadeLinkedList {
@@ -28,40 +37,39 @@ public class InMemoryHistoryManager implements HistoryManager {
         private Node tail;
 
         private void linkNode(Task task) {
-            Node node = new Node();
-            node.setTask(task);
+            Node node = new Node(tail, null, task);
             // при наличии задачи с таким id в мапе - удали
             if (nodeMap.containsKey(task.getId())) {
-                removeNode(nodeMap.get(task.getId()));
+                removeNode(task.getId());
             }
             // если узел первый
             if (head == null) {
                 head = node;
-                tail = node;
-                node.setNext(null);
-                node.setPrev(null);
             } else {
                 node.setPrev(tail);
                 node.setNext(null);
                 tail.setNext(node);
-                tail = node;
             }
+            tail = node;
             nodeMap.put(task.getId(), node);
         }
 
-        private void removeNode(Node node) {
-            if (node == null) {
+        private void removeNode(Integer id) {
+            if (id == null || !nodeMap.containsKey(id)) {
                 return;
             }
-            Node prev = node.getPrev();
-            Node next = node.getNext();
-            nodeMap.remove(node.getTask().getId());
+
+            Node prev = nodeMap.get(id).getPrev();
+            Node next = nodeMap.get(id).getNext();
+            Node target = nodeMap.remove(id);
             // если головной узел
-            if (head == node) {
+            if (head == target) {
+                head.setPrev(null);
                 head = next;
             }
             // если хвостовой узел
-            if (tail == node) {
+            if (tail == target) {
+                tail.setNext(null);
                 tail = prev;
             }
             // если предшествующий и последующий узлы - не null, свяжи предыдущий и последующий узлы между собой
