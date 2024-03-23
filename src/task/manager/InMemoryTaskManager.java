@@ -105,11 +105,15 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void clearAllTasks() {
+        List<Task> tasksList = new ArrayList<>(taskStorage.values());
+        inMemoryHistoryManager.removeTaskType(tasksList);
         taskStorage.clear();
     }
 
     @Override
     public void clearAllSubtasks() {
+        List<Task> subtasksList = new ArrayList<>(subtaskStorage.values());
+        inMemoryHistoryManager.removeTaskType(subtasksList);
         subtaskStorage.clear();
         for (Epic epic : epicStorage.values()) {
             epic.removeAllSubtask();
@@ -119,6 +123,10 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void clearAllEpics() {
+        List<Task> epicList = new ArrayList<>(epicStorage.values());
+        List<Task> subtasksList = new ArrayList<>(subtaskStorage.values());
+        inMemoryHistoryManager.removeTaskType(epicList);
+        inMemoryHistoryManager.removeTaskType(subtasksList);
         epicStorage.clear();
         subtaskStorage.clear();
     }
