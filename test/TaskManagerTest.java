@@ -1,9 +1,9 @@
 import task.elements.Epic;
 import task.elements.Subtask;
 import task.elements.Task;
-import task.manager.InMemoryTaskManager;
-import task.manager.Status;
-import task.manager.TaskManager;
+import task.managers.service_manager.InMemoryTaskManager;
+import task.enums.Status;
+import task.managers.service_manager.TaskManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

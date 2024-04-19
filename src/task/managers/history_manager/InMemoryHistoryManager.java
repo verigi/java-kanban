@@ -1,6 +1,11 @@
-package task.manager.history;
+package task.managers.history_manager;
 
+import task.elements.Epic;
+import task.elements.Subtask;
 import task.elements.Task;
+import task.enums.Status;
+import task.managers.Managers;
+import task.managers.service_manager.TaskManager;
 
 import java.util.*;
 

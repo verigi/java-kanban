@@ -1,9 +1,11 @@
-package task.manager;
+package task.managers.service_manager;
 
 import task.elements.Epic;
 import task.elements.Subtask;
 import task.elements.Task;
-import task.manager.history.HistoryManager;
+import task.managers.Managers;
+import task.enums.Status;
+import task.managers.history_manager.HistoryManager;
 
 import java.util.*;
 
@@ -207,18 +209,25 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    // тест remove метода inMemoryHistory
-    public void removeHistory(int id) {
-        inMemoryHistoryManager.remove(id);
+    public HistoryManager getInMemoryHistoryManager() {
+        return inMemoryHistoryManager;
     }
 
-    //внутренний метод класса
+    public void addToHistory(int id) {
+        if (epicStorage.containsKey(id)) {
+            inMemoryHistoryManager.add(epicStorage.get(id));
+        } else if (subtaskStorage.containsKey(id)) {
+            inMemoryHistoryManager.add(subtaskStorage.get(id));
+        } else if (taskStorage.containsKey(id)) {
+            inMemoryHistoryManager.add(taskStorage.get(id));
+        }
+    }
+
     private int generateID() {
         id++;
         return id;
     }
 
-    //внутренний метод класса
     private void updateEpicStatus(Epic epic) {
         Integer subtaskAmount = epic.getSubtasks().size();
         Integer newSubtasks = 0;

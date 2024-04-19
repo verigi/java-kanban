@@ -1,7 +1,7 @@
 import task.elements.Task;
-import task.manager.history.HistoryManager;
-import task.manager.history.InMemoryHistoryManager;
-import task.manager.Status;
+import task.managers.history_manager.HistoryManager;
+import task.managers.history_manager.InMemoryHistoryManager;
+import task.enums.Status;
 import org.junit.jupiter.api.*;
 
 import java.util.Collections;
