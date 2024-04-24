@@ -8,47 +8,24 @@ import task.exceptions.FileProcessingException;
 import task.exceptions.TaskDetailsFormatException;
 import task.managers.history_manager.HistoryManager;
 import task.managers.service_manager.InMemoryTaskManager;
-import task.managers.service_manager.TaskManager;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileBackedTaskManager extends InMemoryTaskManager implements TaskManager {
-    private final Path pathToSave = Paths.get("src/resources/save.csv");
-    File load;
+public class FileBackedTaskManager extends InMemoryTaskManager {
+    private File file;
 
-    //немного отошел от задания,
-    public FileBackedTaskManager() {
+    public FileBackedTaskManager(File file) {
+        this.file = file;
     }
 
-    private void save() {
-        String header = "id,type,name,status,description,epic\n";
-        try (BufferedWriter writer = Files.newBufferedWriter(pathToSave, StandardCharsets.UTF_8)) {
-            writer.write(header);
-            for (Task task : getAllTasks()) {
-                writer.write(CVSHandler.taskToString(task).replaceAll(",$", "") + "\n");
-            }
-            for (Epic epic : getAllEpicTasks()) {
-                writer.write(CVSHandler.taskToString(epic).replaceAll(",$", "") + "\n");
-            }
-            for (Subtask subtask : getAllSubtasks()) {
-                writer.write(CVSHandler.taskToString(subtask) + "\n");
-            }
-            writer.write("\n");
-            writer.write(CVSHandler.historyToSave(getInMemoryHistoryManager()));
-        } catch (IOException e) {
-            throw new FileProcessingException("Ошибка записи файла");
-        }
-    }
-
-    public FileBackedTaskManager load(File file) {
-        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager();
-        try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
+    public static FileBackedTaskManager load(File file) {
+        FileBackedTaskManager fileBackedTaskManager = new FileBackedTaskManager(file);
+        int updID = 0;
+        try (BufferedReader reader = Files.newBufferedReader(file.toPath())) {
             reader.readLine();
             while (reader.ready()) {
                 String line = reader.readLine();
@@ -56,22 +33,33 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
                     break;
                 }
                 var target = CVSHandler.stringToTask(line);
-                if (target instanceof Epic epic) {
-                    super.addEpic(epic);
-                } else if (target instanceof Subtask subtask) {
-                    super.addSubtask(subtask);
-                } else if (target instanceof Task) {
-                    super.addTask(target);
+                if (target instanceof Task) {
+                    fileBackedTaskManager.taskStorage.put(target.getId(), target);
+                }
+                if (target instanceof Subtask) {
+                    fileBackedTaskManager.subtaskStorage.put(target.getId(), (Subtask) target);
+                    if (!fileBackedTaskManager.epicStorage.isEmpty()) {
+                        Epic epicLinkSub = fileBackedTaskManager.epicStorage.get(((Subtask) target).getEpicID());
+                        epicLinkSub.addSubtask(target.getId());
+                        fileBackedTaskManager.updateEpicStatus(epicLinkSub);
+                    }
+                }
+                if (target instanceof Epic) {
+                    fileBackedTaskManager.epicStorage.put(target.getId(), (Epic) target);
+                }
+                if (target.getId() > updID) {
+                    updID = target.getId();
                 }
             }
             String historyLine = reader.readLine();
-            for (Integer id : CVSHandler.historyToLoad(historyLine)) {
-                addToHistory(id);
+            for (int id : CVSHandler.historyToLoad(historyLine)) {
+                fileBackedTaskManager.addToHistory(id);
             }
+            fileBackedTaskManager.id = updID;
+            return fileBackedTaskManager;
         } catch (IOException e) {
-            throw new FileProcessingException("Ошибка записи файла");
+            throw new FileProcessingException("Ошибка чтения файла");
         }
-        return fileBackedTaskManager;
     }
 
     @Override
@@ -111,21 +99,6 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
     public void updateEpic(Epic epic) {
         super.updateEpic(epic);
         save();
-    }
-
-    @Override
-    public List<Epic> getAllEpicTasks() {
-        return super.getAllEpicTasks();
-    }
-
-    @Override
-    public List<Task> getAllTasks() {
-        return super.getAllTasks();
-    }
-
-    @Override
-    public List<Subtask> getAllSubtasks() {
-        return super.getAllSubtasks();
     }
 
     @Override
@@ -185,16 +158,37 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
         save();
     }
 
+    private void save() {
+        String header = "id,type,name,status,description,epic\n";
+        CVSHandler cvsHandler = new CVSHandler();
+        try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
+            writer.write(header);
+            for (Task task : getAllTasks()) {
+                writer.write(cvsHandler.taskToString(task).replaceAll(",$", "") + "\n");
+            }
+            for (Epic epic : getAllEpicTasks()) {
+                writer.write(cvsHandler.taskToString(epic).replaceAll(",$", "") + "\n");
+            }
+            for (Subtask subtask : getAllSubtasks()) {
+                writer.write(cvsHandler.taskToString(subtask) + "\n");
+            }
+            writer.write("\n");
+            writer.write(cvsHandler.historyToSave(getInMemoryHistoryManager()));
+        } catch (IOException e) {
+            throw new FileProcessingException("Ошибка записи файла");
+        }
+    }
+
     class CVSHandler {
         private static final String COMMA = ",";
 
-        public static String taskToString(Task task) {
+        private String taskToString(Task task) {
             String[] taskDetails = {Integer.toString(task.getId()), task.getType().toString(), task.getName(),
                     task.getStatus().toString(), task.getDescription(), idPointer(task)};
             return String.join(COMMA, taskDetails);
         }
 
-        public static Task stringToTask(String value) {
+        private static Task stringToTask(String value) {
             String[] taskDetails = value.split(COMMA);
             int id = Integer.parseInt(taskDetails[0]);
             String type = taskDetails[1];
@@ -223,7 +217,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager implements TaskMa
             }
         }
 
-        private static String historyToSave(HistoryManager manager) {
+        private String historyToSave(HistoryManager manager) {
             List<Task> history = manager.getHistoryList();
             StringBuilder sb = new StringBuilder();
             for (Task task : history) {

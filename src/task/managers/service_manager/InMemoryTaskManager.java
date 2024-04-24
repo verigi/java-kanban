@@ -10,11 +10,11 @@ import task.managers.history_manager.HistoryManager;
 import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int id = 0;
-    private Map<Integer, Task> taskStorage = new HashMap<>();
-    private Map<Integer, Subtask> subtaskStorage = new HashMap<>();
-    private Map<Integer, Epic> epicStorage = new HashMap<>();
-    private HistoryManager inMemoryHistoryManager = Managers.getDefaultHistory();
+    protected int id = 0;
+    protected Map<Integer, Task> taskStorage = new HashMap<>();
+    protected Map<Integer, Subtask> subtaskStorage = new HashMap<>();
+    protected Map<Integer, Epic> epicStorage = new HashMap<>();
+    protected HistoryManager inMemoryHistoryManager = Managers.getDefaultHistory();
 
     @Override
     public Task addTask(Task task) {
@@ -184,9 +184,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteSubtaskByID(Integer id) {
         if (subtaskStorage.containsKey(id)) {
-            epicStorage.get(subtaskStorage.get(id)
-                            .getEpicID())
-                    .removeSubtask(id);
+            epicStorage.get(subtaskStorage.get(id).getEpicID()).removeSubtask(id);
             updateEpicStatus(epicStorage.get(subtaskStorage.get(id).getEpicID()));
             inMemoryHistoryManager.remove(id);
             subtaskStorage.remove(id);
@@ -209,11 +207,11 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    public HistoryManager getInMemoryHistoryManager() {
+    protected HistoryManager getInMemoryHistoryManager() {
         return inMemoryHistoryManager;
     }
 
-    public void addToHistory(int id) {
+    protected void addToHistory(int id) {
         if (epicStorage.containsKey(id)) {
             inMemoryHistoryManager.add(epicStorage.get(id));
         } else if (subtaskStorage.containsKey(id)) {
@@ -223,12 +221,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
     }
 
-    private int generateID() {
-        id++;
-        return id;
-    }
-
-    private void updateEpicStatus(Epic epic) {
+    protected void updateEpicStatus(Epic epic) {
         Integer subtaskAmount = epic.getSubtasks().size();
         Integer newSubtasks = 0;
         Integer doneSubtasks = 0;
@@ -253,6 +246,11 @@ public class InMemoryTaskManager implements TaskManager {
                 epic.setStatus(Status.IN_PROGRESS);
             }
         }
+    }
+
+    private int generateID() {
+        id++;
+        return id;
     }
 }
 
