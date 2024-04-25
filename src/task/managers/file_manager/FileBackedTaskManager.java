@@ -4,6 +4,7 @@ import task.elements.Epic;
 import task.elements.Subtask;
 import task.elements.Task;
 import task.enums.Status;
+import task.enums.Type;
 import task.exceptions.FileProcessingException;
 import task.exceptions.TaskDetailsFormatException;
 import task.managers.history_manager.HistoryManager;
@@ -33,18 +34,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     break;
                 }
                 var target = CVSHandler.stringToTask(line);
-                if (target instanceof Task) {
+                if (target.getType() == Type.TASK) {
                     fileBackedTaskManager.taskStorage.put(target.getId(), target);
                 }
-                if (target instanceof Subtask) {
+                if (target.getType() == Type.SUBTASK) {
                     fileBackedTaskManager.subtaskStorage.put(target.getId(), (Subtask) target);
                     if (!fileBackedTaskManager.epicStorage.isEmpty()) {
                         Epic epicLinkSub = fileBackedTaskManager.epicStorage.get(((Subtask) target).getEpicID());
                         epicLinkSub.addSubtask(target.getId());
-                        fileBackedTaskManager.updateEpicStatus(epicLinkSub);
                     }
                 }
-                if (target instanceof Epic) {
+                if (target.getType() == Type.EPIC) {
                     fileBackedTaskManager.epicStorage.put(target.getId(), (Epic) target);
                 }
                 if (target.getId() > updID) {
@@ -179,7 +179,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-    class CVSHandler {
+   static class CVSHandler {
         private static final String COMMA = ",";
 
         private String taskToString(Task task) {
