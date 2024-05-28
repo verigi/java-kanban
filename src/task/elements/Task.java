@@ -1,6 +1,7 @@
 package task.elements;
 
-import task.manager.Status;
+import task.enums.Status;
+import task.enums.Type;
 
 import java.util.Objects;
 
@@ -9,11 +10,13 @@ public class Task {
     private String name;
     private String description;
     private Status status;
+    private Type type;
 
     public Task(String name, String description, Status status) {
         this.name = name;
         this.description = description;
         this.status = status;
+        this.type = Type.TASK;
     }
 
     public int getId() {
@@ -46,6 +49,10 @@ public class Task {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     @Override
