@@ -74,11 +74,14 @@ class InMemoryHistoryManagerTest {
         historyManager.add(task3);
         historyManager.remove(1);
         assertEquals(List.of(task2, task3), historyManager.getHistoryList());
+
+        historyManager.remove(3);
+        assertEquals(List.of(task2), historyManager.getHistoryList());
     }
 
     @Test
     @DisplayName("Проверка пустой истории после добавления и удаления всех задач")
-    public void shouldReturnEmpryHistory() {
+    public void shouldReturnEmptyHistoryAfterRemoving() {
         Task task1 = new Task("Задание_1", "Тестовое задание 1", Status.NEW);
         task1.setId(1);
         Task task2 = new Task("Задание_2", "Тестовое задание 2", Status.NEW);

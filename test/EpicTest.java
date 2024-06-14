@@ -1,4 +1,5 @@
 import task.enums.Status;
+import task.exceptions.TaskDetailsFormatException;
 import task.managers.service_manager.TaskManager;
 import task.elements.Epic;
 import task.elements.Subtask;
@@ -8,6 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 class EpicTest {
@@ -22,11 +25,15 @@ class EpicTest {
     @DisplayName("Создание менеджера с эпиком и подзадачами")
     public void createManagerWithEpicAndSubtasks() {
         taskManager = new InMemoryTaskManager();
-        epic = new Epic("Эпик", "Тестовый эпик", Status.NEW);
+        epic = new Epic("Эпик", "Тестовый эпик");
         taskManager.addEpic(epic);
 
-        subtask1 = new Subtask("Подзадача_1", "Тестовая подзадача 1", Status.NEW, epic.getId());
-        subtask2 = new Subtask("Подзадача_2", "Тестовая подзадача 2", Status.NEW, epic.getId());
+        subtask1 = new Subtask("Подзадача_1", "Тестовая подзадача 1",
+                LocalDateTime.of(2000, 1, 1, 10, 0),
+                Duration.ofMinutes(30), epic.getId());
+        subtask2 = new Subtask("Подзадача_2", "Тестовая подзадача 2",
+                LocalDateTime.of(2000, 1, 1, 11, 0),
+                Duration.ofMinutes(30), epic.getId());
         taskManager.addSubtask(subtask1);
         taskManager.addSubtask(subtask2);
 
@@ -103,6 +110,47 @@ class EpicTest {
         taskManager.updateSubtask(subtask2);
 
         Assertions.assertEquals(Status.IN_PROGRESS, epic.getStatus());
+    }
+
+    @Test
+    @DisplayName("Обновление времени эпика: начало эпика - самая ранняя задача, конец - самая поздняя задача")
+    public void timeOfEpicShouldBeChangedAccordingToItsSubtasks(){
+        subtask1.setStartTime(LocalDateTime.of(2000,1,1,0,0));
+        subtask1.setDuration(Duration.ofMinutes(10));
+        subtask2.setStartTime(LocalDateTime.of(2000,1,1,0,10));
+        subtask2.setDuration(Duration.ofMinutes(10));
+        taskManager.updateSubtask(subtask1);
+        taskManager.updateSubtask(subtask2);
+
+        Assertions.assertEquals(LocalDateTime.of(2000,1,1,0,0), epic.getStartTime());
+        Assertions.assertEquals(LocalDateTime.of(2000,1,1,0,20), epic.getEndTime());
+    }
+
+    @Test
+    @DisplayName("Длительность эпика - разница между началом первого сабтаска и концом последнего")
+    public void durationOfEpicIsTimeBetweenStartOfFirstAndEndOfLast(){
+        subtask1.setStartTime(LocalDateTime.of(2000,1,1,1,0));
+        subtask1.setDuration(Duration.ofMinutes(30));
+        subtask2.setStartTime(LocalDateTime.of(2000,1,1,2,0));
+        subtask2.setDuration(Duration.ofMinutes(30));
+        taskManager.updateSubtask(subtask1);
+        taskManager.updateSubtask(subtask2);
+
+        Assertions.assertEquals(Duration.ofMinutes(90), epic.getDuration());
+    }
+
+    @Test
+    @DisplayName("При пересечении задач эпика - выбрасывается исключение")
+    public void shouldThrowAnExceptionWhenHaveIntersectionsInSubs(){
+        subtask1.setStartTime(LocalDateTime.of(2000,1,1,1,0));
+        subtask1.setDuration(Duration.ofMinutes(10));
+        subtask2.setStartTime(LocalDateTime.of(2000,1,1,1,0));
+        subtask1.setDuration(Duration.ofMinutes(10));
+
+        Assertions.assertThrows(TaskDetailsFormatException.class, () -> {
+            taskManager.updateSubtask(subtask1);
+            taskManager.updateSubtask(subtask2);
+        });
     }
 
 }

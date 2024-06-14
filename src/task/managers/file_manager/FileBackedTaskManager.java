@@ -13,6 +13,8 @@ import task.managers.service_manager.InMemoryTaskManager;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -159,7 +161,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
     }
 
     private void save() {
-        String header = "id,type,name,status,description,epic\n";
+        String header = "id,type,name,status,description,start,duration,epic\n";
         CVSHandler cvsHandler = new CVSHandler();
         try (BufferedWriter writer = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
             writer.write(header);
@@ -179,12 +181,13 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
         }
     }
 
-   static class CVSHandler {
+    static class CVSHandler {
         private static final String COMMA = ",";
 
         private String taskToString(Task task) {
             String[] taskDetails = {Integer.toString(task.getId()), task.getType().toString(), task.getName(),
-                    task.getStatus().toString(), task.getDescription(), idPointer(task)};
+                    task.getStatus().toString(), task.getDescription(), task.getStartTime().toString(),
+                    task.getDuration().toString(), idPointer(task)};
             return String.join(COMMA, taskDetails);
         }
 
@@ -195,21 +198,28 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             String name = taskDetails[2];
             Status status = Status.valueOf(taskDetails[3].toUpperCase());
             String description = taskDetails[4];
-            Integer epicId = type.equals("SUBTASK") ? Integer.parseInt(taskDetails[5]) : null;
+            LocalDateTime startTime = LocalDateTime.parse(taskDetails[5]);
+            Duration duration = Duration.parse(taskDetails[6]);
+            Integer epicId = type.equals("SUBTASK") ? Integer.parseInt(taskDetails[7]) : null;
             switch (type) {
                 case "TASK":
-                    Task task = new Task(name, description, status);
+                    Task task = new Task(name, description, startTime, duration);
                     task.setId(id);
+                    task.setStatus(status);
                     return task;
 
                 case "SUBTASK":
-                    Subtask subtask = new Subtask(name, description, status, epicId);
+                    Subtask subtask = new Subtask(name, description, startTime, duration, epicId);
                     subtask.setId(id);
+                    subtask.setStatus(status);
                     return subtask;
 
                 case "EPIC":
-                    Epic epic = new Epic(name, description, status);
+                    Epic epic = new Epic(name, description);
                     epic.setId(id);
+                    epic.setStatus(status);
+                    epic.setStartTime(startTime);
+                    epic.setDuration(duration);
                     return epic;
 
                 default:

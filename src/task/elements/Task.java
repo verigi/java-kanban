@@ -3,20 +3,41 @@ package task.elements;
 import task.enums.Status;
 import task.enums.Type;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-public class Task {
+public class Task implements Comparable {
     private int id;
     private String name;
     private String description;
     private Status status;
     private Type type;
+    private LocalDateTime startTime;
+    private Duration duration;
+    private LocalDateTime endTime;
+    protected static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MMMM-dd-yyyy HH:mm");
+
+    public Task(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 
     public Task(String name, String description, Status status) {
         this.name = name;
         this.description = description;
         this.status = status;
+    }
+
+    public Task(String name, String description, LocalDateTime startTime, Duration duration) {
         this.type = Type.TASK;
+        this.status = Status.NEW;
+        this.name = name;
+        this.description = description;
+        this.startTime = startTime;
+        this.duration = duration;
+        this.endTime = getEndTime();
     }
 
     public int getId() {
@@ -55,6 +76,26 @@ public class Task {
         return type;
     }
 
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public LocalDateTime getEndTime() {
+        return startTime.plusMinutes(duration.toMinutes());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -87,6 +128,15 @@ public class Task {
         return this.getClass().getSimpleName() + ": id=" + getId() +
                 ", name='" + getName() + '\'' +
                 ", description='" + getDescription() + '\'' +
-                ", status='" + getStatus() + '\'';
+                ", status='" + getStatus() + '\'' +
+                ", start time='" + getStartTime().format(dateTimeFormatter) + '\'' +
+                ", end time='" + getEndTime().format(dateTimeFormatter) + '\'' +
+                ", duration='" + String.format("%02d:%02d", getDuration().toHoursPart(), getDuration().toMinutesPart()) + '\'';
+    }
+
+
+    @Override
+    public int compareTo(Object o) {
+        return this.getStartTime().compareTo(((Task) o).startTime);
     }
 }

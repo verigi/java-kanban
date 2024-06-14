@@ -1,275 +1,215 @@
 import task.elements.Epic;
 import task.elements.Subtask;
 import task.elements.Task;
-import task.managers.service_manager.InMemoryTaskManager;
 import task.enums.Status;
+import task.exceptions.TaskDetailsFormatException;
 import task.managers.service_manager.TaskManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
-class TaskManagerTest {
-    TaskManager taskManager;
-    Task task1;
-    Task task2;
-    Epic epic1;
-    Subtask subtask1;
-    Subtask subtask2;
+abstract class TaskManagersTest<T extends TaskManager> {
+    protected T manager;
+
+    public abstract T init();
+
+    Task task_1;
+    Task task_2;
+    Epic epic_1;
+    Subtask subtask_1;
+    Subtask subtask_2;
 
     @BeforeEach
-    @Test
-    @DisplayName("Создание менеджера с задачами, эпиком и подзадачами")
-    public void createManagerWithTasksEpicAndSubtasks() {
-        taskManager = new InMemoryTaskManager();
-        task1 = new Task("Задача_1", "Тестовая задача 1", Status.NEW);
-        task2 = new Task("Задача_2", "Тестовая задача 2", Status.NEW);
-        taskManager.addTask(task1);
-        taskManager.addTask(task2);
+    // установка стандартных значений
+    public void taskInitialization() {
+        init();
+        task_1 = new Task("Тестовое_задание_1", "Описание_задания_1",
+                LocalDateTime.of(2000, 1, 1, 0, 0), Duration.ofMinutes(10));
+        task_2 = new Task("Тестовое_задание_2", "Описание_задания_2",
+                LocalDateTime.of(2000, 1, 1, 1, 0), Duration.ofMinutes(10));
+        epic_1 = new Epic("Тестовый_эпик_1", "Описание_эпика");
+        subtask_1 = new Subtask("Тестовый_сабтаск_1", "Описание_сабтаска_1",
+                LocalDateTime.of(2000, 1, 1, 2, 0), Duration.ofMinutes(10), 3);
+        subtask_2 = new Subtask("Тестовый_сабтаск_2", "Описание_сабтаска_2",
+                LocalDateTime.of(2000, 1, 1, 3, 0), Duration.ofMinutes(10), 3);
+    }
 
-        epic1 = new Epic("Эпик", "Тестовый эпик", Status.NEW);
-        taskManager.addEpic(epic1);
-
-        subtask1 = new Subtask("Подзадача_1", "Тестовая подзадача 1", Status.NEW, epic1.getId());
-        subtask2 = new Subtask("Подзадача_2", "Тестовая подзадача 2", Status.NEW, epic1.getId());
-        taskManager.addSubtask(subtask1);
-        taskManager.addSubtask(subtask2);
-
-        Assertions.assertEquals(2, taskManager.getAllTasks().size());
-        Assertions.assertEquals(List.of(task1, task2), taskManager.getAllTasks());
-        Assertions.assertEquals(1, taskManager.getAllEpicTasks().size());
-        Assertions.assertEquals(List.of(epic1), taskManager.getAllEpicTasks());
-        Assertions.assertEquals(2, taskManager.getAllSubtasks().size());
-        Assertions.assertEquals(List.of(subtask1, subtask2), taskManager.getAllSubtasks());
+    protected void addingToManager() {
+        manager.addTask(task_1);
+        manager.addTask(task_2);
+        manager.addEpic(epic_1);
+        manager.addSubtask(subtask_1);
+        manager.addSubtask(subtask_2);
     }
 
     @Test
-    @DisplayName("Добавление задачи")
-    public void addingAnyKindOfTask() {
-        // проверка до добавления в списки
-        Assertions.assertEquals(5, taskManager.getAllTasks().size() +
-                taskManager.getAllEpicTasks().size() +
-                taskManager.getAllSubtasks().size());
-
-        // добавление по задаче каждого типа
-        Task task3 = new Task("Задача_3", "Тестовая задача 3", Status.NEW);
-        taskManager.addTask(task3);
-        Epic epic2 = new Epic("Эпик_2", "Текстовый эпик 2", Status.NEW);
-        taskManager.addEpic(epic2);
-        Subtask subtask3 = new Subtask("Подзадача_3", "Тестовая подзадача 3", Status.NEW, epic2.getId());
-        taskManager.addSubtask(subtask3);
-
-        // проверка после добавления
-        Assertions.assertEquals(8, taskManager.getAllTasks().size() +
-                taskManager.getAllEpicTasks().size() +
-                taskManager.getAllSubtasks().size());
+    @DisplayName("Добавление заданий в менеджер")
+    public void saveInManagerTest() {
+        addingToManager();
+        // проверка наличия
+        Assertions.assertEquals(List.of(task_1, task_2), manager.getAllTasks());
+        Assertions.assertEquals(List.of(epic_1), manager.getAllEpicTasks());
+        Assertions.assertEquals(List.of(subtask_1,subtask_2),manager.getAllSubtasks());
+        // проверка id
+        Assertions.assertEquals(1, task_1.getId());
+        Assertions.assertEquals(2, task_2.getId());
+        Assertions.assertEquals(3, epic_1.getId());
+        Assertions.assertEquals(4, subtask_1.getId());
+        Assertions.assertEquals(5, subtask_2.getId());
+        // проверка имени
+        Assertions.assertEquals("Тестовое_задание_1", task_1.getName());
+        Assertions.assertEquals("Тестовое_задание_2", task_2.getName());
+        Assertions.assertEquals("Тестовый_эпик_1", epic_1.getName());
+        Assertions.assertEquals("Тестовый_сабтаск_1",subtask_1.getName());
+        Assertions.assertEquals("Тестовый_сабтаск_2",subtask_2.getName());
     }
 
     @Test
-    @DisplayName("Очистка списка задач")
-    public void listOfTasksShouldBeEmpty() {
-        taskManager.clearAllTasks();
-        taskManager.clearAllEpics();
-        taskManager.clearAllSubtasks();
-
-        Assertions.assertEquals(Collections.emptyList(), taskManager.getAllTasks());
-        Assertions.assertEquals(Collections.emptyList(), taskManager.getAllEpicTasks());
-        Assertions.assertEquals(Collections.emptyList(), taskManager.getAllSubtasks());
+    @DisplayName("Проверка удаления всех типов заданий")
+    public void deletingAllKindOfTasksTest(){
+        addingToManager();
+        manager.clearAllTasks();
+        manager.clearAllEpics();
+        manager.clearAllSubtasks();
+        Assertions.assertTrue(manager.getAllTasks().isEmpty());
+        Assertions.assertTrue(manager.getAllEpicTasks().isEmpty());
+        Assertions.assertTrue(manager.getAllSubtasks().isEmpty());
     }
 
     @Test
-    @DisplayName("Поиск задания по ID")
-    public void shouldReturnTaskByID() {
-        Task task3 = new Task("Задача_3", "Тестовая задача 3", Status.NEW);
-        taskManager.addTask(task3);
-
-        Assertions.assertEquals(task3, taskManager.getTask(task3.getId()));
+    @DisplayName("Проверка удаления типов заданий по id")
+    public void deletingAllKindOfTasksByIdTest(){
+        addingToManager();
+        // удаление тестовое_задание_1
+        manager.deleteTaskByID(1);
+        // удаление тестовый_сабтаск_1
+        manager.deleteSubtaskByID(4);
+        Assertions.assertEquals(List.of(task_2),manager.getAllTasks());
+        Assertions.assertEquals(List.of(subtask_2), manager.getAllSubtasks());
+        // удаление эпика подразумевает удаление всех его сабтасков
+        manager.deleteEpicByID(3);
+        Assertions.assertTrue(manager.getAllEpicTasks().isEmpty());
+        Assertions.assertTrue(manager.getAllSubtasks().isEmpty());
     }
 
     @Test
-    @DisplayName("Поиск задания по несуществующему ID")
-    public void shouldBeNullForNoSuchTaskID() {
-        Assertions.assertNull(taskManager.getTask(Integer.MAX_VALUE - 1), "Существующее задание");
+    @DisplayName("Проверка поиска заданий по ID и записи в историю")
+    public void gettingAllKindOfTasksById(){
+        addingToManager();
+        // возвращает по id нужный таск
+        Assertions.assertEquals(task_1, manager.getTask(1));
+        Assertions.assertEquals(task_2, manager.getTask(2));
+        Assertions.assertEquals(epic_1, manager.getEpic(3));
+        Assertions.assertEquals(subtask_1, manager.getSubtask(4));
+        Assertions.assertEquals(subtask_2, manager.getSubtask(5));
+        // проверка записи в историю
+        Assertions.assertEquals(List.of(task_1,task_2,epic_1,subtask_1,subtask_2), manager.getHistory());
     }
 
     @Test
-    @DisplayName("Поиск подзадания по ID")
-    public void shouldReturnSubtaskByID() {
-        Subtask subtask3 = new Subtask("Подзадача_3", "Тестовая подзадача 3", Status.NEW, epic1.getId());
-        taskManager.addSubtask(subtask3);
+    @DisplayName("Проверка поиска задания по несуществующему ID")
+    public void noSuchIdSearch(){
+        addingToManager();
+        Assertions.assertThrows(NoSuchElementException.class, () -> manager.getTask(10));
+        Assertions.assertThrows(NoSuchElementException.class, () -> manager.getEpic(10));
+        Assertions.assertThrows(NoSuchElementException.class, () -> manager.getSubtask(10));
+        Assertions.assertTrue(manager.getHistory().isEmpty());
+    }
 
-        Assertions.assertEquals(subtask3, taskManager.getSubtask(subtask3.getId()));
+
+    @Test
+    @DisplayName("Проверка подвязка сабстасков к эпикам")
+    public void epicSearchBySubtasksID(){
+        addingToManager();
+        Assertions.assertEquals(epic_1.getId(), subtask_1.getEpicID());
+        Assertions.assertEquals(epic_1.getId(), subtask_2.getEpicID());
     }
 
     @Test
-    @DisplayName("Поиск подзадания по несуществующему ID")
-    public void shouldBeNullForNoSuchSubtaskID() {
-        Assertions.assertNull(taskManager.getSubtask(Integer.MAX_VALUE - 1), "Существующее подзадание");
+    @DisplayName("Проверка обновление данных задания")
+    public void updatingTasksData(){
+        addingToManager();
+        task_1.setName("Обновленное_имя_1");
+        manager.updateTask(task_1);
+        Assertions.assertEquals("Обновленное_имя_1", manager.getTask(1).getName());
     }
 
     @Test
-    @DisplayName("Поиск эпика по ID")
-    public void shouldReturnEpicByID() {
-        Epic epic2 = new Epic("Эпик_2", "Тестовый эпик 2", Status.NEW);
-        taskManager.addEpic(epic2);
-
-        Assertions.assertEquals(epic2, taskManager.getEpic(epic2.getId()));
+    @DisplayName("Проверка обновление данных сабтасков")
+    public void updatingSubtasksData(){
+        addingToManager();
+        subtask_1.setName("Обновленное_имя_1");
+        manager.updateSubtask(subtask_1);
+        Assertions.assertEquals("Обновленное_имя_1", manager.getSubtask(4).getName());
     }
 
     @Test
-    @DisplayName("Получение эпика по несуществующему ID")
-    public void shouldBeNullForNoSuchEpicID() {
-        Assertions.assertNull(taskManager.getEpic(Integer.MAX_VALUE - 1), "Существующее подзадание");
+    @DisplayName("Проверка обновление данных эпика")
+    public void updatingEpicData(){
+        addingToManager();
+        epic_1.setName("Обновленное_имя_1");
+        manager.updateEpic(epic_1);
+        Assertions.assertEquals("Обновленное_имя_1", manager.getEpic(3).getName());
     }
 
     @Test
-    @DisplayName("Удаление задания/ий по ID")
-    public void shouldReturnListOfTaskWithoutRemovedOnes() {
-        Task task3 = new Task("Задача_3", "Тестовая задача 3", Status.NEW);
-        Task task4 = new Task("Задача_4", "Тестовая задача 4", Status.NEW);
-        Task task5 = new Task("Задача_5", "Тестовая задача 5", Status.NEW);
-        taskManager.addTask(task3);
-        taskManager.addTask(task4);
-        taskManager.addTask(task5);
-        // удаление одного задания
-        taskManager.deleteTaskByID(task1.getId());
-        Assertions.assertEquals(List.of(task2, task3, task4, task5), taskManager.getAllTasks());
-        // удаление нескольких подзаданий
-        taskManager.deleteTaskByID(task2.getId());
-        taskManager.deleteTaskByID(task3.getId());
-        Assertions.assertEquals(List.of(task4, task5), taskManager.getAllTasks());
+    @DisplayName("Проверка пересечения временных интервалов")
+    public void shouldThrowAnExceptionOfTimeDetails() {
+        addingToManager();
+        task_1.setStartTime(task_2.getStartTime().plusMinutes(10));
+        task_2.setStartTime(task_1.getStartTime());
+        manager.updateTask(task_1);
+        manager.updateTask(task_2);
+
+        Assertions.assertThrows(TaskDetailsFormatException.class, () -> {
+            manager.addTask(task_1);
+            manager.addTask(task_2);
+        });
+
+        task_2.setStartTime(task_1.getStartTime().plusMinutes(5));
+        Assertions.assertThrows(TaskDetailsFormatException.class, () -> {
+            manager.addTask(task_1);
+            manager.addTask(task_2);
+        });
     }
 
     @Test
-    @DisplayName("Удаление подзадания/ий по ID")
-    public void shouldReturnListOfSubtaskWithoutRemovedOnes() {
-        Subtask subtask3 = new Subtask("Подзадача_3", "Тестовая подзадача 3", Status.NEW, epic1.getId());
-        Subtask subtask4 = new Subtask("Подзадача_4", "Тестовая подзадача 4", Status.NEW, epic1.getId());
-        Subtask subtask5 = new Subtask("Подзадача_5", "Тестовая подзадача 5", Status.NEW, epic1.getId());
-        taskManager.addSubtask(subtask3);
-        taskManager.addSubtask(subtask4);
-        taskManager.addSubtask(subtask5);
-        // удаление одного подзадания
-        taskManager.deleteSubtaskByID(subtask1.getId());
-        Assertions.assertEquals(List.of(subtask2, subtask3, subtask4, subtask5), taskManager.getAllSubtasks());
-        // удаление нескольких подзаданий
-        taskManager.deleteSubtaskByID(subtask2.getId());
-        taskManager.deleteSubtaskByID(subtask3.getId());
-        Assertions.assertEquals(List.of(subtask4, subtask5), taskManager.getAllSubtasks());
-    }
-
-    @Test
-    @DisplayName("Удаление эпика/ов по ID")
-    public void shouldReturnListOfEpicWithoutRemovedOnes() {
-        Epic epic2 = new Epic("Эпик_2", "Текстовый эпик 2", Status.NEW);
-        Epic epic3 = new Epic("Эпик_3", "Текстовый эпик 3", Status.NEW);
-        taskManager.addEpic(epic2);
-        taskManager.addEpic(epic3);
-        // удаление одного эпика
-        taskManager.deleteEpicByID(epic2.getId());
-        Assertions.assertEquals(List.of(epic1, epic3), taskManager.getAllEpicTasks());
-        // удаление нескольких эпиков
-        taskManager.deleteEpicByID(epic1.getId());
-        Assertions.assertEquals(List.of(epic3), taskManager.getAllEpicTasks());
-    }
-
-    @Test
-    @DisplayName("Удаление эпика - удаление подзаданий")
-    public void shouldReturnEmptyListOfSubtasks() {
-        taskManager.deleteEpicByID(epic1.getId());
-        Assertions.assertEquals(Collections.emptyList(), taskManager.getAllSubtasks());
-    }
-
-    @Test
-    @DisplayName("Поиск эпика по подзадаче")
-    public void shouldCheckIfSubtaskHasEpicID() {
-        Assertions.assertEquals(epic1.getId(), subtask1.getEpicID());
-        Assertions.assertEquals(epic1.getId(), subtask2.getEpicID());
-    }
-
-    @Test
-    @DisplayName("Обновление статуса задачи")
-    public void shouldUpdateTaskStatus() {
-        task1.setStatus(Status.IN_PROGRESS);
-        task2.setStatus(Status.DONE);
-        Assertions.assertEquals(Status.IN_PROGRESS, task1.getStatus());
-        Assertions.assertEquals(Status.DONE, task2.getStatus());
-    }
-
-    @Test
-    @DisplayName("Обновление статуса подзадачи")
-    public void shouldUpdateSubtaskStatus() {
-        subtask1.setStatus(Status.IN_PROGRESS);
-        subtask2.setStatus(Status.DONE);
-        Assertions.assertEquals(Status.IN_PROGRESS, subtask1.getStatus());
-        Assertions.assertEquals(Status.DONE, subtask2.getStatus());
-    }
-
-    @Test
-    @DisplayName("Получение списка задач")
-    public void shouldReturnTaskList() {
-        Assertions.assertEquals(List.of(task1, task2), taskManager.getAllTasks());
-    }
-
-    @Test
-    @DisplayName("Получение списка подзадач")
-    public void shouldReturnSubtaskList() {
-        Assertions.assertEquals(List.of(subtask1, subtask2), taskManager.getAllSubtasks());
-    }
-
-    @Test
-    @DisplayName("Получение списка эпиков")
-    public void shouldReturnEpicList() {
-        Assertions.assertEquals(List.of(epic1), taskManager.getAllEpicTasks());
-    }
-
-    @Test
-    @DisplayName("Проверка истории вызовов")
-    public void shouldReturnListOfRequests() {
-        taskManager.getTask(1);
-        taskManager.getTask(2);
-        taskManager.getEpic(3);
-        taskManager.getSubtask(4);
-        taskManager.getSubtask(5);
-        Assertions.assertEquals(List.of(task1, task2, epic1, subtask1, subtask2), taskManager.getHistory());
-    }
-
-    @Test
-    @DisplayName("Проверка на дубли")
-    public void shouldReturnListWithoutDuplicates() {
-        taskManager.getTask(1);
-        taskManager.getTask(2);
-        taskManager.getTask(1);
-        taskManager.getTask(1);
-        Assertions.assertEquals(List.of(task2, task1), taskManager.getHistory());
-    }
-
-    @Test
-    @DisplayName("Проверка удаления списка всех задач, проверка удаления из истории")
-    public void shouldReturnEmptyListOfTasks() {
-        taskManager.getTask(1);
-        taskManager.getTask(2);
-        taskManager.clearAllTasks();
-        Assertions.assertEquals(0, taskManager.getHistory().size());
-    }
-
-    @Test
-    @DisplayName("Проверка удаления списка всех эпиков, проверка удаления из истории")
-    public void shouldReturnEmptyListOfEpics() {
-        taskManager.getEpic(3);
-        taskManager.clearAllEpics();
-        Assertions.assertEquals(0, taskManager.getHistory().size());
-    }
-
-    @Test
-    @DisplayName("Проверка удаления списка всех подзадач, проверка удаления из истории")
-    public void shouldReturnEmptyListOfSubs() {
-        taskManager.getSubtask(4);
-        taskManager.getSubtask(5);
-        taskManager.clearAllSubtasks();
-        Assertions.assertEquals(0, taskManager.getHistory().size());
+    @DisplayName("Проверка обновления статуса/времени эпика")
+    public  void updatingEpicStatusDateData(){
+        addingToManager();
+        Assertions.assertEquals(Status.NEW,epic_1.getStatus());
+//ПРОВЕРКА СТАТУСОВ
+        //Сабтаск_1 - в процессе, Сабтаск_2 - новый
+        subtask_1.setStatus(Status.IN_PROGRESS);
+        manager.updateSubtask(subtask_1);
+        Assertions.assertEquals(Status.IN_PROGRESS,epic_1.getStatus());
+        //Сабтаск_1 - в процессе, Сабтаск_2 - в процессе
+        subtask_2.setStatus(Status.IN_PROGRESS);
+        manager.updateSubtask(subtask_2);
+        Assertions.assertEquals(Status.IN_PROGRESS,epic_1.getStatus());
+        //Сабтаск_1 - выполнен, Сабтаск_2 - в процессе
+        subtask_1.setStatus(Status.DONE);
+        manager.updateSubtask(subtask_1);
+        Assertions.assertEquals(Status.IN_PROGRESS,epic_1.getStatus());
+        //Сабтаск_1 - выполнен, Сабтаск_2 - выполнен
+        subtask_2.setStatus(Status.DONE);
+        manager.updateSubtask(subtask_2);
+        Assertions.assertEquals(Status.DONE,epic_1.getStatus());
+//ПРОВЕРКА ВРЕМЕНИ
+        //проверка времени старта эпика
+        Assertions.assertEquals(subtask_1.getStartTime(), epic_1.getStartTime());
+        //проверка времени конца эпика
+        Assertions.assertEquals(subtask_2.getEndTime(), epic_1.getEndTime());
+        //проверка длительности эпика
+        Assertions.assertEquals(subtask_1.getDuration().plus(subtask_2.getDuration())
+                .plus(Duration.between(subtask_1.getEndTime(),subtask_2.getStartTime())),epic_1.getDuration());
     }
 }
