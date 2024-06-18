@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileBackedTaskManager extends InMemoryTaskManager {
-    private File file;
+    private final File file;
 
     public FileBackedTaskManager(File file) {
         this.file = file;
@@ -186,8 +186,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
         private String taskToString(Task task) {
             String[] taskDetails = {Integer.toString(task.getId()), task.getType().toString(), task.getName(),
-                    task.getStatus().toString(), task.getDescription(), task.getStartTime().toString(),
-                    task.getDuration().toString(), idPointer(task)};
+                    task.getStatus().toString(), task.getDescription(), String.valueOf(task.getStartTime()),
+                    String.valueOf(task.getDuration()), idPointer(task)};
             return String.join(COMMA, taskDetails);
         }
 
@@ -202,28 +202,27 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             Duration duration = Duration.parse(taskDetails[6]);
             Integer epicId = type.equals("SUBTASK") ? Integer.parseInt(taskDetails[7]) : null;
             switch (type) {
-                case "TASK":
+                case "TASK" -> {
                     Task task = new Task(name, description, startTime, duration);
                     task.setId(id);
                     task.setStatus(status);
                     return task;
-
-                case "SUBTASK":
+                }
+                case "SUBTASK" -> {
                     Subtask subtask = new Subtask(name, description, startTime, duration, epicId);
                     subtask.setId(id);
                     subtask.setStatus(status);
                     return subtask;
-
-                case "EPIC":
+                }
+                case "EPIC" -> {
                     Epic epic = new Epic(name, description);
                     epic.setId(id);
                     epic.setStatus(status);
                     epic.setStartTime(startTime);
                     epic.setDuration(duration);
                     return epic;
-
-                default:
-                    throw new TaskDetailsFormatException("Некорректное значение поля: тип задания");
+                }
+                default -> throw new TaskDetailsFormatException("Некорректное значение поля: тип задания");
             }
         }
 
@@ -231,7 +230,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
             List<Task> history = manager.getHistoryList();
             StringBuilder sb = new StringBuilder();
             for (Task task : history) {
-                sb.append(task.getId() + ",");
+                sb.append(task.getId()).append(",");
             }
             return sb.toString().replaceAll(",$", "");
         }
