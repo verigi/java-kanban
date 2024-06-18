@@ -1,5 +1,6 @@
 package task.elements;
 
+import task.enums.Status;
 import task.enums.Type;
 
 import java.time.LocalDateTime;
@@ -7,13 +8,14 @@ import java.util.ArrayList;
 
 public class Epic extends Task {
 
-    private ArrayList<Integer> subtasks;
-    private Type type;
+    private final ArrayList<Integer> subtasks;
+    private final Type type;
     private LocalDateTime endTime;
 
     public Epic(String name, String description) {
         super(name, description);
         this.type = Type.EPIC;
+        this.setStatus(Status.NEW);
         subtasks = new ArrayList<>();
     }
 
@@ -30,9 +32,7 @@ public class Epic extends Task {
     }
 
     public void removeSubtask(Integer id) {
-        if (subtasks.contains(id)) {
-            subtasks.remove(id);
-        }
+        subtasks.remove(id);
     }
 
     public void setEndTime(LocalDateTime endTime) {
