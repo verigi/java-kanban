@@ -16,7 +16,6 @@ public class Task implements Comparable {
     private Type type;
     private LocalDateTime startTime;
     private Duration duration;
-    private LocalDateTime endTime;
     protected static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MMMM-dd-yyyy HH:mm");
 
     public Task(String name, String description) {
@@ -37,7 +36,15 @@ public class Task implements Comparable {
         this.description = description;
         this.startTime = startTime;
         this.duration = duration;
-        this.endTime = getEndTime();
+    }
+
+    public Task(String name, String description, Status status, LocalDateTime startTime, Duration duration) {
+        this.type = Type.TASK;
+        this.status = status;
+        this.name = name;
+        this.description = description;
+        this.startTime = startTime;
+        this.duration = duration;
     }
 
     public int getId() {
@@ -93,7 +100,12 @@ public class Task implements Comparable {
     }
 
     public LocalDateTime getEndTime() {
-        return startTime.plusMinutes(duration.toMinutes());
+        try {
+            return startTime.plusMinutes(duration.toMinutes());
+        } catch (NullPointerException e) {
+            System.out.println("Не обозначено время начала/продолжительность задачи");
+            return null;
+        }
     }
 
     @Override

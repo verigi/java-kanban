@@ -13,8 +13,6 @@ public interface TaskManager {
 
     Epic addEpic(Epic epic);
 
-    void addToPrioritized(Task task);
-
     void updateTask(Task task);
 
     void updateSubtask(Subtask subtask);

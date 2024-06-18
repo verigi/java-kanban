@@ -57,7 +57,7 @@ abstract class TaskManagersTest<T extends TaskManager> {
         // проверка наличия
         Assertions.assertEquals(List.of(task_1, task_2), manager.getAllTasks());
         Assertions.assertEquals(List.of(epic_1), manager.getAllEpicTasks());
-        Assertions.assertEquals(List.of(subtask_1,subtask_2),manager.getAllSubtasks());
+        Assertions.assertEquals(List.of(subtask_1, subtask_2), manager.getAllSubtasks());
         // проверка id
         Assertions.assertEquals(1, task_1.getId());
         Assertions.assertEquals(2, task_2.getId());
@@ -68,13 +68,13 @@ abstract class TaskManagersTest<T extends TaskManager> {
         Assertions.assertEquals("Тестовое_задание_1", task_1.getName());
         Assertions.assertEquals("Тестовое_задание_2", task_2.getName());
         Assertions.assertEquals("Тестовый_эпик_1", epic_1.getName());
-        Assertions.assertEquals("Тестовый_сабтаск_1",subtask_1.getName());
-        Assertions.assertEquals("Тестовый_сабтаск_2",subtask_2.getName());
+        Assertions.assertEquals("Тестовый_сабтаск_1", subtask_1.getName());
+        Assertions.assertEquals("Тестовый_сабтаск_2", subtask_2.getName());
     }
 
     @Test
     @DisplayName("Проверка удаления всех типов заданий")
-    public void deletingAllKindOfTasksTest(){
+    public void deletingAllKindOfTasksTest() {
         addingToManager();
         manager.clearAllTasks();
         manager.clearAllEpics();
@@ -86,13 +86,13 @@ abstract class TaskManagersTest<T extends TaskManager> {
 
     @Test
     @DisplayName("Проверка удаления типов заданий по id")
-    public void deletingAllKindOfTasksByIdTest(){
+    public void deletingAllKindOfTasksByIdTest() {
         addingToManager();
         // удаление тестовое_задание_1
         manager.deleteTaskByID(1);
         // удаление тестовый_сабтаск_1
         manager.deleteSubtaskByID(4);
-        Assertions.assertEquals(List.of(task_2),manager.getAllTasks());
+        Assertions.assertEquals(List.of(task_2), manager.getAllTasks());
         Assertions.assertEquals(List.of(subtask_2), manager.getAllSubtasks());
         // удаление эпика подразумевает удаление всех его сабтасков
         manager.deleteEpicByID(3);
@@ -102,7 +102,7 @@ abstract class TaskManagersTest<T extends TaskManager> {
 
     @Test
     @DisplayName("Проверка поиска заданий по ID и записи в историю")
-    public void gettingAllKindOfTasksById(){
+    public void gettingAllKindOfTasksById() {
         addingToManager();
         // возвращает по id нужный таск
         Assertions.assertEquals(task_1, manager.getTask(1));
@@ -111,12 +111,12 @@ abstract class TaskManagersTest<T extends TaskManager> {
         Assertions.assertEquals(subtask_1, manager.getSubtask(4));
         Assertions.assertEquals(subtask_2, manager.getSubtask(5));
         // проверка записи в историю
-        Assertions.assertEquals(List.of(task_1,task_2,epic_1,subtask_1,subtask_2), manager.getHistory());
+        Assertions.assertEquals(List.of(task_1, task_2, epic_1, subtask_1, subtask_2), manager.getHistory());
     }
 
     @Test
     @DisplayName("Проверка поиска задания по несуществующему ID")
-    public void noSuchIdSearch(){
+    public void noSuchIdSearch() {
         addingToManager();
         Assertions.assertThrows(NoSuchElementException.class, () -> manager.getTask(10));
         Assertions.assertThrows(NoSuchElementException.class, () -> manager.getEpic(10));
@@ -127,7 +127,7 @@ abstract class TaskManagersTest<T extends TaskManager> {
 
     @Test
     @DisplayName("Проверка подвязка сабстасков к эпикам")
-    public void epicSearchBySubtasksID(){
+    public void epicSearchBySubtasksID() {
         addingToManager();
         Assertions.assertEquals(epic_1.getId(), subtask_1.getEpicID());
         Assertions.assertEquals(epic_1.getId(), subtask_2.getEpicID());
@@ -135,7 +135,7 @@ abstract class TaskManagersTest<T extends TaskManager> {
 
     @Test
     @DisplayName("Проверка обновление данных задания")
-    public void updatingTasksData(){
+    public void updatingTasksData() {
         addingToManager();
         task_1.setName("Обновленное_имя_1");
         manager.updateTask(task_1);
@@ -144,7 +144,7 @@ abstract class TaskManagersTest<T extends TaskManager> {
 
     @Test
     @DisplayName("Проверка обновление данных сабтасков")
-    public void updatingSubtasksData(){
+    public void updatingSubtasksData() {
         addingToManager();
         subtask_1.setName("Обновленное_имя_1");
         manager.updateSubtask(subtask_1);
@@ -153,7 +153,7 @@ abstract class TaskManagersTest<T extends TaskManager> {
 
     @Test
     @DisplayName("Проверка обновление данных эпика")
-    public void updatingEpicData(){
+    public void updatingEpicData() {
         addingToManager();
         epic_1.setName("Обновленное_имя_1");
         manager.updateEpic(epic_1);
@@ -164,52 +164,55 @@ abstract class TaskManagersTest<T extends TaskManager> {
     @DisplayName("Проверка пересечения временных интервалов")
     public void shouldThrowAnExceptionOfTimeDetails() {
         addingToManager();
-        task_1.setStartTime(task_2.getStartTime().plusMinutes(10));
-        task_2.setStartTime(task_1.getStartTime());
+        //s1 before s2, e1 after e2
+        task_1.setStartTime(LocalDateTime.of(2000, 1, 1, 0, 0));
+        task_2.setStartTime(LocalDateTime.of(2000, 1, 1, 0, 10));
+        task_1.setDuration(Duration.ofMinutes(30));
+        task_2.setDuration(Duration.ofMinutes(10));
         manager.updateTask(task_1);
         manager.updateTask(task_2);
-
         Assertions.assertThrows(TaskDetailsFormatException.class, () -> {
             manager.addTask(task_1);
             manager.addTask(task_2);
         });
-
-        task_2.setStartTime(task_1.getStartTime().plusMinutes(5));
+        //s1 after s2, e1 after e2
+        task_2.setStartTime(task_1.getStartTime().minusMinutes(5));
+        manager.updateTask(task_2);
         Assertions.assertThrows(TaskDetailsFormatException.class, () -> {
-            manager.addTask(task_1);
             manager.addTask(task_2);
         });
+
+
     }
 
     @Test
     @DisplayName("Проверка обновления статуса/времени эпика")
-    public  void updatingEpicStatusDateData(){
+    public void updatingEpicStatusDateData() {
         addingToManager();
-        Assertions.assertEquals(Status.NEW,epic_1.getStatus());
+        Assertions.assertEquals(Status.NEW, epic_1.getStatus());
 //ПРОВЕРКА СТАТУСОВ
         //Сабтаск_1 - в процессе, Сабтаск_2 - новый
         subtask_1.setStatus(Status.IN_PROGRESS);
         manager.updateSubtask(subtask_1);
-        Assertions.assertEquals(Status.IN_PROGRESS,epic_1.getStatus());
+        Assertions.assertEquals(Status.IN_PROGRESS, epic_1.getStatus());
         //Сабтаск_1 - в процессе, Сабтаск_2 - в процессе
         subtask_2.setStatus(Status.IN_PROGRESS);
         manager.updateSubtask(subtask_2);
-        Assertions.assertEquals(Status.IN_PROGRESS,epic_1.getStatus());
+        Assertions.assertEquals(Status.IN_PROGRESS, epic_1.getStatus());
         //Сабтаск_1 - выполнен, Сабтаск_2 - в процессе
         subtask_1.setStatus(Status.DONE);
         manager.updateSubtask(subtask_1);
-        Assertions.assertEquals(Status.IN_PROGRESS,epic_1.getStatus());
+        Assertions.assertEquals(Status.IN_PROGRESS, epic_1.getStatus());
         //Сабтаск_1 - выполнен, Сабтаск_2 - выполнен
         subtask_2.setStatus(Status.DONE);
         manager.updateSubtask(subtask_2);
-        Assertions.assertEquals(Status.DONE,epic_1.getStatus());
+        Assertions.assertEquals(Status.DONE, epic_1.getStatus());
 //ПРОВЕРКА ВРЕМЕНИ
         //проверка времени старта эпика
         Assertions.assertEquals(subtask_1.getStartTime(), epic_1.getStartTime());
         //проверка времени конца эпика
         Assertions.assertEquals(subtask_2.getEndTime(), epic_1.getEndTime());
         //проверка длительности эпика
-        Assertions.assertEquals(subtask_1.getDuration().plus(subtask_2.getDuration())
-                .plus(Duration.between(subtask_1.getEndTime(),subtask_2.getStartTime())),epic_1.getDuration());
+        Assertions.assertEquals(subtask_1.getDuration().plus(subtask_2.getDuration()), epic_1.getDuration());
     }
 }

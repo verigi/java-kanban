@@ -1,9 +1,7 @@
 package task.elements;
 
-import task.enums.Status;
 import task.enums.Type;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -11,16 +9,11 @@ public class Epic extends Task {
 
     private ArrayList<Integer> subtasks;
     private Type type;
-    private LocalDateTime defaultStartTime = LocalDateTime.of(1, 1, 1, 1, 1);
-    private Duration defaultDuration = Duration.ofMinutes(0);
-    LocalDateTime endTime;
+    private LocalDateTime endTime;
 
     public Epic(String name, String description) {
         super(name, description);
         this.type = Type.EPIC;
-        this.setStatus(Status.NEW);
-        this.setStartTime(defaultStartTime);
-        this.setDuration(defaultDuration);
         subtasks = new ArrayList<>();
     }
 
@@ -44,6 +37,10 @@ public class Epic extends Task {
 
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 
     public void removeAllSubtask() {

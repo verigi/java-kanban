@@ -127,7 +127,7 @@ class EpicTest {
     }
 
     @Test
-    @DisplayName("Длительность эпика - разница между началом первого сабтаска и концом последнего")
+    @DisplayName("Длительность эпика - сумма длительностей его подзадач")
     public void durationOfEpicIsTimeBetweenStartOfFirstAndEndOfLast(){
         subtask1.setStartTime(LocalDateTime.of(2000,1,1,1,0));
         subtask1.setDuration(Duration.ofMinutes(30));
@@ -136,7 +136,7 @@ class EpicTest {
         taskManager.updateSubtask(subtask1);
         taskManager.updateSubtask(subtask2);
 
-        Assertions.assertEquals(Duration.ofMinutes(90), epic.getDuration());
+        Assertions.assertEquals(Duration.ofMinutes(60), epic.getDuration());
     }
 
     @Test
