@@ -100,11 +100,10 @@ public class Task implements Comparable {
         return duration;
     }
 
-    public LocalDateTime getEndTime() {
+    public LocalDateTime getEndTime() throws NullPointerException {
         try {
             return startTime.plusMinutes(duration.toMinutes());
         } catch (NullPointerException e) {
-            System.out.println("Не обозначено время начала/продолжительность задачи");
             return null;
         }
     }
