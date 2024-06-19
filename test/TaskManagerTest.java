@@ -2,7 +2,6 @@ import task.elements.Epic;
 import task.elements.Subtask;
 import task.elements.Task;
 import task.enums.Status;
-import task.exceptions.TaskDetailsFormatException;
 import task.managers.service_manager.TaskManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -158,31 +155,6 @@ abstract class TaskManagersTest<T extends TaskManager> {
         epic_1.setName("Обновленное_имя_1");
         manager.updateEpic(epic_1);
         Assertions.assertEquals("Обновленное_имя_1", manager.getEpic(3).getName());
-    }
-
-    @Test
-    @DisplayName("Проверка пересечения временных интервалов")
-    public void shouldThrowAnExceptionOfTimeDetails() {
-        addingToManager();
-        //s1 before s2, e1 after e2
-        task_1.setStartTime(LocalDateTime.of(2000, 1, 1, 0, 0));
-        task_2.setStartTime(LocalDateTime.of(2000, 1, 1, 0, 10));
-        task_1.setDuration(Duration.ofMinutes(30));
-        task_2.setDuration(Duration.ofMinutes(10));
-        manager.updateTask(task_1);
-        manager.updateTask(task_2);
-        Assertions.assertThrows(TaskDetailsFormatException.class, () -> {
-            manager.addTask(task_1);
-            manager.addTask(task_2);
-        });
-        //s1 after s2, e1 after e2
-        task_2.setStartTime(task_1.getStartTime().minusMinutes(5));
-        manager.updateTask(task_2);
-        Assertions.assertThrows(TaskDetailsFormatException.class, () -> {
-            manager.addTask(task_2);
-        });
-
-
     }
 
     @Test

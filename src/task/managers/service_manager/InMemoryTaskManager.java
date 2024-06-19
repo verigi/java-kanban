@@ -320,8 +320,7 @@ public class InMemoryTaskManager implements TaskManager {
                         (taskEndTime.isAfter(verifyingStartTime) && taskEndTime.isBefore(verifyingEndTime)) ||
                         (taskStartTime.isBefore(verifyingStartTime) && taskEndTime.isAfter(verifyingEndTime)) ||
                         (taskStartTime.isAfter(verifyingEndTime) && taskEndTime.isBefore(verifyingStartTime)) ||
-                        (taskStartTime.equals(verifyingStartTime)) || (taskEndTime.equals(verifyingEndTime)))
-                 {
+                        (taskStartTime.equals(verifyingStartTime)) || (taskEndTime.equals(verifyingEndTime))) {
                     hasIntersections = true;
                 }
             }
