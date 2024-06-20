@@ -58,7 +58,7 @@ public class InMemoryTaskManager implements TaskManager {
     public void updateTask(Task task) {
         if (taskStorage.containsKey(task.getId())) {
             prioritizedStorage.removeIf(x -> x.getId() == task.getId());
-            prioritizedStorage.add(task);
+            addToPrioritized(task);
             taskStorage.put(task.getId(), task);
         } else {
             System.out.println("Задания с таким ID не существует.");
