@@ -16,7 +16,7 @@ public class Task implements Comparable {
     private Type type;
     private LocalDateTime startTime;
     private Duration duration;
-    protected static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MMMM-dd-yyyy HH:mm");
+    protected static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm");
 
     public Task(String name, String description) {
         this.name = name;
@@ -82,6 +82,10 @@ public class Task implements Comparable {
 
     public Type getType() {
         return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public void setStartTime(LocalDateTime startTime) {
