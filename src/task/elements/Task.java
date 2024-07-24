@@ -1,6 +1,5 @@
 package task.elements;
 
-import com.google.gson.annotations.Expose;
 import enums.Status;
 import enums.Type;
 

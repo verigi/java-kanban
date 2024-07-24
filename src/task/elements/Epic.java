@@ -21,7 +21,6 @@ public class Epic extends Task {
     public ArrayList<Integer> getSubtasks() {
         return new ArrayList<>(subtasks);
     }
-    
 
     public Type getType() {
         return type;
