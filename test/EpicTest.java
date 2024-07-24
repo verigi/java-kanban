@@ -1,5 +1,5 @@
-import task.enums.Status;
-import task.exceptions.TaskDetailsFormatException;
+import enums.Status;
+import exceptions.TaskDetailsFormatException;
 import task.managers.service_manager.TaskManager;
 import task.elements.Epic;
 import task.elements.Subtask;

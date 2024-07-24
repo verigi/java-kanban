@@ -1,4 +1,4 @@
-package task.exceptions;
+package exceptions;
 
 public class TaskDetailsFormatException extends RuntimeException {
     public TaskDetailsFormatException(final String message) {

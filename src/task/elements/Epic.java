@@ -1,29 +1,30 @@
 package task.elements;
 
-import task.enums.Status;
-import task.enums.Type;
+import enums.Status;
+import enums.Type;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Epic extends Task {
 
-    private final ArrayList<Integer> subtasks;
+    private ArrayList<Integer> subtasks;
     private LocalDateTime endTime;
 
     public Epic(String name, String description) {
         super(name, description);
-        this.setType(Type.EPIC);
-        this.setStatus(Status.NEW);
+        this.type = Type.EPIC;
+        this.status = Status.NEW;
         subtasks = new ArrayList<>();
     }
 
     public ArrayList<Integer> getSubtasks() {
         return new ArrayList<>(subtasks);
     }
+    
 
     public Type getType() {
-        return this.getType();
+        return type;
     }
 
     public void addSubtask(Integer id) {
@@ -48,7 +49,7 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        if (subtasks.isEmpty()){
+        if (subtasks.isEmpty()) {
             return this.getClass().getSimpleName() + ": id=" + getId() +
                     ", name='" + getName() + '\'' +
                     ", description='" + getDescription() + '\'' +
