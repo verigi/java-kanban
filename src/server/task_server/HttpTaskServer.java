@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
 С уважением, Иван
  */
 public class HttpTaskServer {
-    private final int PORT = 8080;
+    private final int port = 8080;
     private HttpServer server;
     private TaskManager manager;
     private final Gson gson = Managers.createGson();
@@ -53,7 +53,7 @@ public class HttpTaskServer {
     public HttpTaskServer(TaskManager manager) {
         try {
             this.manager = manager;
-            server = HttpServer.create(new InetSocketAddress(PORT), 0);
+            server = HttpServer.create(new InetSocketAddress(port), 0);
             server.createContext("/storage", new ControlHttpHandler());
         } catch (IOException exception) {
             System.out.println("Ошибка запуска сервера");
@@ -63,7 +63,7 @@ public class HttpTaskServer {
 
     public void start() {
         server.start();
-        System.out.println("Сервер запущен. Номер порта: " + PORT);
+        System.out.println("Сервер запущен. Номер порта: " + port);
     }
 
     public void stop() {
