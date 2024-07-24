@@ -119,7 +119,8 @@ public class InMemoryTaskManager implements TaskManager {
             return subtaskStorage.values().stream()
                     .filter(x -> x.getEpicID() == epicID)
                     .collect(Collectors.toList());
-        } throw new NoSuchElementException("Эпик с id " + epicID + " не найден");
+        }
+        throw new NoSuchElementException("Эпик с id " + epicID + " не найден");
     }
 
     @Override
