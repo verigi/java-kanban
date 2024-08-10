@@ -1,21 +1,21 @@
 package task.elements;
 
-import task.enums.Status;
-import task.enums.Type;
+import enums.Status;
+import enums.Type;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+
 public class Subtask extends Task {
 
     private int epicID;
-    private Type type;
 
 
     public Subtask(String name, String description, int epicID) {
         super(name, description);
+        this.status = Status.NEW;
         this.type = Type.SUBTASK;
-        this.setStatus(Status.NEW);
         this.epicID = epicID;
     }
 
@@ -28,7 +28,7 @@ public class Subtask extends Task {
     public Subtask(String name, String description, LocalDateTime startTime, Duration duration, int epicID) {
         super(name, description, startTime, duration);
         this.type = Type.SUBTASK;
-        this.setStatus(Status.NEW);
+        this.status = Status.NEW;
         this.epicID = epicID;
     }
 
@@ -36,6 +36,7 @@ public class Subtask extends Task {
                    int epicID) {
         super(name, description, status, startTime, duration);
         this.type = Type.SUBTASK;
+        this.status = Status.NEW;
         this.epicID = epicID;
     }
 

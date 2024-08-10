@@ -1,7 +1,7 @@
 package task.elements;
 
-import task.enums.Status;
-import task.enums.Type;
+import enums.Status;
+import enums.Type;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -9,22 +9,24 @@ import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class Task implements Comparable {
-    private int id;
-    private String name;
-    private String description;
-    private Status status;
-    private Type type;
-    private LocalDateTime startTime;
-    private Duration duration;
-    protected static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MMMM-dd-yyyy HH:mm");
+    protected int id;
+    protected String name;
+    protected String description;
+    protected Status status;
+    protected Type type;
+    protected LocalDateTime startTime;
+    protected Duration duration;
+    protected static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     public Task(String name, String description) {
+        this.type = Type.TASK;
         this.name = name;
         this.description = description;
-        this.setStatus(Status.NEW);
+        this.status = Status.NEW;
     }
 
     public Task(String name, String description, Status status) {
+        this.type = Type.TASK;
         this.name = name;
         this.description = description;
         this.status = status;
@@ -32,18 +34,18 @@ public class Task implements Comparable {
 
     public Task(String name, String description, LocalDateTime startTime, Duration duration) {
         this.type = Type.TASK;
-        this.status = Status.NEW;
         this.name = name;
         this.description = description;
+        this.status = Status.NEW;
         this.startTime = startTime;
         this.duration = duration;
     }
 
     public Task(String name, String description, Status status, LocalDateTime startTime, Duration duration) {
         this.type = Type.TASK;
-        this.status = status;
         this.name = name;
         this.description = description;
+        this.status = status;
         this.startTime = startTime;
         this.duration = duration;
     }
@@ -82,6 +84,10 @@ public class Task implements Comparable {
 
     public Type getType() {
         return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public void setStartTime(LocalDateTime startTime) {
@@ -145,7 +151,6 @@ public class Task implements Comparable {
                 ", end time='" + getEndTime().format(dateTimeFormatter) + '\'' +
                 ", duration='" + String.format("%02d:%02d", getDuration().toHoursPart(), getDuration().toMinutesPart()) + '\'';
     }
-
 
     @Override
     public int compareTo(Object o) {

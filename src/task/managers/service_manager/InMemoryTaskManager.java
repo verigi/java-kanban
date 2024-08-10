@@ -3,10 +3,10 @@ package task.managers.service_manager;
 import task.elements.Epic;
 import task.elements.Subtask;
 import task.elements.Task;
-import task.enums.Type;
-import task.exceptions.TaskDetailsFormatException;
+import enums.Type;
+import exceptions.TaskDetailsFormatException;
 import task.managers.Managers;
-import task.enums.Status;
+import enums.Status;
 import task.managers.history_manager.HistoryManager;
 
 import java.time.Duration;
@@ -115,9 +115,12 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public List<Subtask> getCertainEpicSubtasks(Integer epicID) {
-        return subtaskStorage.values().stream()
-                .filter(x -> x.getEpicID() == epicID)
-                .collect(Collectors.toList());
+        if (epicStorage.containsKey(epicID)) {
+            return subtaskStorage.values().stream()
+                    .filter(x -> x.getEpicID() == epicID)
+                    .collect(Collectors.toList());
+        }
+        throw new NoSuchElementException("Эпик с id " + epicID + " не найден");
     }
 
     @Override
@@ -135,6 +138,7 @@ public class InMemoryTaskManager implements TaskManager {
         epicStorage = epicStorage.entrySet().stream().peek(epicEntry -> {
             epicEntry.getValue().removeAllSubtask();
             updateEpicStatus(epicEntry.getValue());
+            updateEpicDateTime(epicEntry.getValue());
         }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         prioritizedStorage.removeIf(x -> x.getType().equals(Type.SUBTASK));
         subtaskStorage.clear();
@@ -170,7 +174,7 @@ public class InMemoryTaskManager implements TaskManager {
                 .findFirst();
         optionalSubtask.ifPresent(subtask -> inMemoryHistoryManager.add(subtask));
         return optionalSubtask.orElseThrow(() ->
-                new NoSuchElementException("Подзадача с id " + id + " отсутствует в списке"));
+                new NoSuchElementException("Сабтаск с id " + id + " отсутствует в списке"));
     }
 
     @Override
@@ -196,7 +200,7 @@ public class InMemoryTaskManager implements TaskManager {
             inMemoryHistoryManager.remove(id);
             prioritizedStorage.remove(taskStorage.remove(id));
         } else {
-            System.out.println("Задания с таким id не существует.");
+            throw new NoSuchElementException("Задания с id " + id + " не найдено");
         }
     }
 
@@ -210,7 +214,7 @@ public class InMemoryTaskManager implements TaskManager {
             updateEpicStatus(epic);
             updateEpicDateTime(epic);
         } else {
-            System.out.println("Подзадания с таким ID не существует.");
+            throw new NoSuchElementException("Сабтаска с id " + id + " не найдено");
         }
     }
 
@@ -225,7 +229,7 @@ public class InMemoryTaskManager implements TaskManager {
             epicStorage.remove(id);
             inMemoryHistoryManager.remove(id);
         } else {
-            System.out.println("Эпика с таким id не существует.");
+            throw new NoSuchElementException("Эпика с id " + id + " не найдено");
         }
     }
 
@@ -271,6 +275,13 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     protected void updateEpicDateTime(Epic epic) {
+        if (epic.getSubtasks().isEmpty()) {
+            epic.setStartTime(null);
+            epic.setDuration(null);
+            epic.setEndTime(null);
+            return;
+        }
+
         Optional<LocalDateTime> epicStart = getCertainEpicSubtasks(epic.getId()).stream()
                 .map(Subtask::getStartTime)
                 .filter(Objects::nonNull)

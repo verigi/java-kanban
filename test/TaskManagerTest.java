@@ -1,13 +1,14 @@
 import task.elements.Epic;
 import task.elements.Subtask;
 import task.elements.Task;
-import task.enums.Status;
+import enums.Status;
 import task.managers.service_manager.TaskManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,17 +17,17 @@ import java.util.NoSuchElementException;
 abstract class TaskManagersTest<T extends TaskManager> {
     protected T manager;
 
-    public abstract T init();
+    protected abstract T init();
 
-    Task task_1;
-    Task task_2;
-    Epic epic_1;
-    Subtask subtask_1;
-    Subtask subtask_2;
+    protected Task task_1;
+    protected Task task_2;
+    protected Epic epic_1;
+    protected Subtask subtask_1;
+    protected Subtask subtask_2;
 
     @BeforeEach
     // установка стандартных значений
-    public void taskInitialization() {
+    public void taskInitialization(){
         init();
         task_1 = new Task("Тестовое_задание_1", "Описание_задания_1",
                 LocalDateTime.of(2000, 1, 1, 0, 0), Duration.ofMinutes(10));
